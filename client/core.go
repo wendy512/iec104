@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/spf13/cast"
@@ -11,15 +10,15 @@ import (
 	"net"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 )
 
 type Client struct {
-	client104 *cs104.Client
-	settings  *Settings
-	ctx       context.Context
-	cancel    context.CancelFunc
-	csChan    chan *asdu.ASDU
+	client104             *cs104.Client
+	settings              *Settings
+	onConnectHandler      func(c *Client)
+	connectionLostHandler func(c *Client)
 }
 
 // Settings 连接配置
@@ -61,23 +60,19 @@ func NewSettings() *Settings {
 	}
 }
 
-func New(settings *Settings) *Client {
+func New(settings *Settings, call ClientASDUCall) *Client {
 	opts := newClientOption(settings)
-	handler := &clientHandler{}
+	handler := &clientHandler{call: call}
 	client104 := cs104.NewClient(handler, opts)
 	logCfg := settings.LogCfg
 	if logCfg != nil {
 		client104.LogMode(logCfg.Enable)
 		client104.SetLogProvider(logCfg.LogProvider)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	csChan := make(chan *asdu.ASDU, 1)
 
 	return &Client{
+		settings:  settings,
 		client104: client104,
-		ctx:       ctx,
-		cancel:    cancel,
-		csChan:    csChan,
 	}
 }
 
@@ -85,10 +80,46 @@ func (c *Client) Connect() error {
 	if err := c.testConnect(); err != nil {
 		return err
 	}
-	return c.client104.Start()
+
+	if err := c.client104.Start(); err != nil {
+		return err
+	}
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	// 连接状态事件
+	c.client104.SetOnConnectHandler(func(cs *cs104.Client) {
+		cs.SendStartDt()
+		wg.Done()
+		if c.onConnectHandler != nil {
+			c.onConnectHandler(c)
+		}
+	})
+
+	if WaitTimeout(wg, c.settings.Cfg104.ConnectTimeout0) {
+		return fmt.Errorf("connection timeout of %f seconds", c.settings.Cfg104.ConnectTimeout0.Seconds())
+	}
+	return nil
+}
+
+// WaitTimeout 等待WaitGroup完成，但最多等待指定的持续时间
+func WaitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
+	c := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(c)
+	}()
+
+	select {
+	case <-c:
+		return false // completed normally
+	case <-time.After(timeout):
+		return true // timed out
+	}
 }
 
 func (c *Client) Close() error {
+	c.client104.SendStopDt()
 	return c.client104.Close()
 }
 
@@ -98,19 +129,13 @@ func (c *Client) SetLogCfg(cfg LogCfg) {
 }
 
 func (c *Client) SetOnConnectHandler(f func(c *Client)) {
-	c.client104.SetOnConnectHandler(func(_ *cs104.Client) {
-		f(c)
-	})
+	c.onConnectHandler = f
 }
 
 func (c *Client) SetConnectionLostHandler(f func(c *Client)) {
-	c.client104.SetOnConnectHandler(func(_ *cs104.Client) {
+	c.client104.SetConnectionLostHandler(func(_ *cs104.Client) {
 		f(c)
 	})
-}
-
-func (c *Client) InterrogationCallback() {
-
 }
 
 func (c *Client) IsConnected() bool {
@@ -285,17 +310,6 @@ func (c *Client) doSend(cmd *command) error {
 	return err
 }
 
-func (c *Client) running() {
-	for {
-		select {
-		case <-c.ctx.Done():
-			return
-		case rxAsdu := <-c.csChan:
-			cw.call(rxAsdu)
-		}
-	}
-}
-
 func activationCoa() asdu.CauseOfTransmission {
 	return asdu.CauseOfTransmission{
 		IsTest:     false,
@@ -323,8 +337,7 @@ func (c *Client) testConnect() error {
 	if err != nil {
 		return err
 	}
-	conn.Close()
-	return nil
+	return conn.Close()
 }
 
 func newClientOption(settings *Settings) *cs104.ClientOption {
@@ -336,7 +349,6 @@ func newClientOption(settings *Settings) *cs104.ClientOption {
 		opts.SetParams(asdu.ParamsWide)
 	}
 	opts.SetAutoReconnect(settings.AutoConnect)
-	opts.SetReconnectInterval(settings.ReconnectInterval)
 	opts.SetReconnectInterval(settings.ReconnectInterval)
 	opts.SetTLSConfig(settings.TLS)
 
