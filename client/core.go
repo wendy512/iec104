@@ -4,13 +4,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/spf13/cast"
-	"github.com/thinkgos/go-iecp5/asdu"
-	"github.com/thinkgos/go-iecp5/clog"
-	"github.com/thinkgos/go-iecp5/cs104"
+	"github.com/wendy512/go-iecp5/asdu"
+	"github.com/wendy512/go-iecp5/clog"
+	"github.com/wendy512/go-iecp5/cs104"
+	"github.com/wendy512/iec104/pkg/waitgroup"
 	"net"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -60,7 +60,7 @@ func NewSettings() *Settings {
 	}
 }
 
-func New(settings *Settings, call ClientASDUCall) *Client {
+func New(settings *Settings, call ASDUCall) *Client {
 	opts := newClientOption(settings)
 	handler := &clientHandler{call: call}
 	client104 := cs104.NewClient(handler, opts)
@@ -85,7 +85,7 @@ func (c *Client) Connect() error {
 		return err
 	}
 
-	wg := &sync.WaitGroup{}
+	wg := &waitgroup.WaitGroup{}
 	wg.Add(1)
 	// 连接状态事件
 	c.client104.SetOnConnectHandler(func(cs *cs104.Client) {
@@ -96,26 +96,11 @@ func (c *Client) Connect() error {
 		}
 	})
 
-	if WaitTimeout(wg, c.settings.Cfg104.ConnectTimeout0) {
+	// WaitTimeout 等待WaitGroup完成，但最多等待指定的持续时间
+	if err := wg.WaitTimeout(c.settings.Cfg104.ConnectTimeout0); err != nil {
 		return fmt.Errorf("connection timeout of %f seconds", c.settings.Cfg104.ConnectTimeout0.Seconds())
 	}
 	return nil
-}
-
-// WaitTimeout 等待WaitGroup完成，但最多等待指定的持续时间
-func WaitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
-	c := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(c)
-	}()
-
-	select {
-	case <-c:
-		return false // completed normally
-	case <-time.After(timeout):
-		return true // timed out
-	}
 }
 
 func (c *Client) Close() error {
@@ -138,8 +123,35 @@ func (c *Client) SetConnectionLostHandler(f func(c *Client)) {
 	})
 }
 
+func (c *Client) SetServerActiveHandler(f func(c *Client)) {
+	c.client104.SetServerActiveHandler(func(_ *cs104.Client) {
+		f(c)
+	})
+}
+
 func (c *Client) IsConnected() bool {
 	return c.client104.IsConnected()
+}
+
+// SendCmd 双点遥控
+func (c *Client) SendCmd(addr uint16, typeId asdu.TypeID, ioa asdu.InfoObjAddr, value any) error {
+	cmd := &command{
+		typeId: typeId,
+		ioa:    ioa,
+		ca:     asdu.CommonAddr(addr),
+		value:  value,
+		qoc: asdu.QualifierOfCommand{
+			Qual:     asdu.QOCNoAdditionalDefinition,
+			InSelect: false,
+		},
+		qos: asdu.QualifierOfSetpointCmd{
+			Qual:     0,
+			InSelect: false,
+		},
+		t: time.Now(),
+	}
+
+	return c.doSend(cmd)
 }
 
 // SendInterrogationCmd 发起总召唤
@@ -353,7 +365,7 @@ func newClientOption(settings *Settings) *cs104.ClientOption {
 	opts.SetTLSConfig(settings.TLS)
 
 	server := formatServerUrl(settings)
-	opts.AddRemoteServer(server)
+	_ = opts.AddRemoteServer(server)
 	return opts
 }
 

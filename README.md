@@ -7,20 +7,27 @@ English | [中文](README_zh_CN.md)
 IEC104 library
 
 ## Overview
-iec104 is an open source (Apache-2.0 license) implementation of the IEC 104 client and server library that implements the MMS, GOOSE and SV protocols.
-It can be used to implement IEC 61850 compliant clients and PCs on embedded systems and PCs running Linux, Windows Server application.
+This project implements a client for the IEC 60870-5-104 protocol (commonly referred to as IEC 104) using the Go programming language. 
+IEC 104 is a widely used protocol in the electrical and industrial automation sectors, enabling reliable and efficient communication for remote control and data acquisition.
 
 ## Features
 
 The library support the following IEC 104 protocol features:
 
-* client/server for CS 104 TCP/IP communication
-* Support for much application layer(except file object) message types
-* Support for buffered and unbuffered reports
-* Data access service (get data, set data)
-* all data set services (get values, set values, browse)
-* dynamic data set services (create and delete)
-* TLS support
+* TCP/IP Based Communication
+    * Utilizes standard TCP/IP protocols for communication, ensuring compatibility with a wide range of network infrastructures.
+* Multiple Information Types
+    * Supports transmission of various information types including single point information, double point information, measured values (normalized, scaled, short floating point), integrated totals, and commands (single, double, set point).
+* Real-time Data Exchange
+    * Provides real-time data exchange capabilities, essential for monitoring and controlling industrial processes and electrical systems.
+* Time Synchronization
+    * Supports time synchronization commands to ensure that all connected devices maintain accurate and synchronized time.
+* Event-driven Communication
+    * Supports event-driven data transmission, allowing for efficient communication by only sending updates when changes occur.
+* Quality and Priority Indicators
+    * Includes quality and priority indicators for transmitted data, ensuring that the integrity and importance of the data are maintained.
+* Automatic Reconnection
+    * Implements automatic reconnection mechanisms to handle network disruptions, ensuring continuous and reliable communication.
 
 ## How to use
 ```shell  
@@ -28,7 +35,7 @@ go get -u github.com/wendy512/iec104
 ```
 
 ## License
-iec104 is based on the [Apache License 2.0](./LICENSE) agreement, and iec104 relies on some third-party components whose open source agreement is also Apache License 2.0.
+iec104 is based on the [Apache License 2.0](./LICENSE) agreement.
 ## Contact
 
 - Email：<taowenwuit@gmail.com>
