@@ -3,15 +3,15 @@ package client
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/spf13/cast"
-	"github.com/wendy512/go-iecp5/asdu"
-	"github.com/wendy512/go-iecp5/clog"
-	"github.com/wendy512/go-iecp5/cs104"
-	"github.com/wendy512/iec104/pkg/waitgroup"
 	"net"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/spf13/cast"
+	"github.com/wendy512/go-iecp5/asdu"
+	"github.com/wendy512/go-iecp5/clog"
+	"github.com/wendy512/go-iecp5/cs104"
 )
 
 type Client struct {
@@ -85,22 +85,28 @@ func (c *Client) Connect() error {
 		return err
 	}
 
-	wg := &waitgroup.WaitGroup{}
-	wg.Add(1)
+	var connected bool
+	doneChan := make(chan struct{})
 	// 连接状态事件
 	c.client104.SetOnConnectHandler(func(cs *cs104.Client) {
 		cs.SendStartDt()
-		wg.Done()
+		if !connected { // 检查是否已经标记为已连接
+			close(doneChan)  // 关闭done channel
+			connected = true // 标记为已连接
+		}
 		if c.onConnectHandler != nil {
 			c.onConnectHandler(c)
 		}
 	})
 
-	// WaitTimeout 等待WaitGroup完成，但最多等待指定的持续时间
-	if err := wg.WaitTimeout(c.settings.Cfg104.ConnectTimeout0); err != nil {
+	select {
+	case <-doneChan:
+		// 连接成功
+		return nil
+	case <-time.After(c.settings.Cfg104.ConnectTimeout0):
+		// 连接超时
 		return fmt.Errorf("connection timeout of %f seconds", c.settings.Cfg104.ConnectTimeout0.Seconds())
 	}
-	return nil
 }
 
 func (c *Client) Close() error {
