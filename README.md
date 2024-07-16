@@ -40,4 +40,4 @@ go get -u github.com/wendy512/iec104
 iec104 is based on the [Apache License 2.0](./LICENSE) agreement.
 ## Contact
 
-- Email：<taowenwuit@gmail.com>
+- Email：<wendy512@yeah.net>
