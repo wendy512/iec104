@@ -16,13 +16,14 @@ const (
 func TestClient(t *testing.T) {
 	settings := client.NewSettings()
 	settings.Host = "192.168.33.12"
-	settings.LogCfg = &client.LogCfg{Enable: false}
+	settings.LogCfg = &client.LogCfg{Enable: true}
 	c := client.New(settings, &clientCall{})
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	c.SetOnConnectHandler(func(c *client.Client) {
 		// 连接成功以后做的操作
+		fmt.Printf("connected %s iec104 server\n", settings.Host)
 	})
 
 	// server active确认后回调

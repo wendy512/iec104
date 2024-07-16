@@ -3,16 +3,17 @@ package client
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/spf13/cast"
-	"github.com/wendy512/go-iecp5/asdu"
-	"github.com/wendy512/go-iecp5/clog"
-	"github.com/wendy512/go-iecp5/cs104"
 	"github.com/wendy512/iec104/pkg/waitgroup"
 	"net"
 	"net/url"
 	"strconv"
 	"sync/atomic"
 	"time"
+
+	"github.com/spf13/cast"
+	"github.com/wendy512/go-iecp5/asdu"
+	"github.com/wendy512/go-iecp5/clog"
+	"github.com/wendy512/go-iecp5/cs104"
 )
 
 type Client struct {
@@ -101,7 +102,6 @@ func (c *Client) Connect() error {
 		}
 	})
 
-	// WaitTimeout 等待WaitGroup完成，但最多等待指定的持续时间
 	if err := wg.WaitTimeout(c.settings.Cfg104.ConnectTimeout0); err != nil {
 		return fmt.Errorf("connection timeout of %f seconds", c.settings.Cfg104.ConnectTimeout0.Seconds())
 	}
@@ -118,16 +118,19 @@ func (c *Client) SetLogCfg(cfg LogCfg) {
 	c.client104.SetLogProvider(cfg.LogProvider)
 }
 
+// SetOnConnectHandler 连接成功后回调，如果连接断开重新连接上也会回调，所以存在多次调用的情况
 func (c *Client) SetOnConnectHandler(f func(c *Client)) {
 	c.onConnectHandler = f
 }
 
+// SetConnectionLostHandler 连接断开后回调，如果连接重复断开也会回调，所以存在多次调用的情况
 func (c *Client) SetConnectionLostHandler(f func(c *Client)) {
 	c.client104.SetConnectionLostHandler(func(_ *cs104.Client) {
 		f(c)
 	})
 }
 
+// SetServerActiveHandler 激活确认后回调，如果连接断开重新连接上也会回调，所以存在多次调用的情况
 func (c *Client) SetServerActiveHandler(f func(c *Client)) {
 	c.client104.SetServerActiveHandler(func(_ *cs104.Client) {
 		f(c)
