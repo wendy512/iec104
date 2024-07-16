@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/url"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -87,10 +88,14 @@ func (c *Client) Connect() error {
 
 	wg := &waitgroup.WaitGroup{}
 	wg.Add(1)
+	// 标记是不是第一次
+	var firstConnect atomic.Bool
 	// 连接状态事件
 	c.client104.SetOnConnectHandler(func(cs *cs104.Client) {
+		if firstConnect.CompareAndSwap(false, true) {
+			wg.Done()
+		}
 		cs.SendStartDt()
-		wg.Done()
 		if c.onConnectHandler != nil {
 			c.onConnectHandler(c)
 		}
