@@ -369,6 +369,8 @@ func newClientOption(settings *Settings) *cs104.ClientOption {
 	}
 	if settings.Params == nil {
 		opts.SetParams(asdu.ParamsWide)
+	} else {
+		opts.SetParams(settings.Params)
 	}
 	opts.SetAutoReconnect(settings.AutoConnect)
 	opts.SetReconnectInterval(settings.ReconnectInterval)
