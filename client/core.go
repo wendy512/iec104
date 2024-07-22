@@ -364,6 +364,8 @@ func newClientOption(settings *Settings) *cs104.ClientOption {
 	opts := cs104.NewOption()
 	if settings.Cfg104 == nil {
 		opts.SetConfig(cs104.DefaultConfig())
+	} else {
+		opts.SetConfig(*settings.Cfg104)
 	}
 	if settings.Params == nil {
 		opts.SetParams(asdu.ParamsWide)
