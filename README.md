@@ -15,26 +15,19 @@ IEC 104 is a widely used protocol in the electrical and industrial automation se
 The library support the following IEC 104 protocol features:
 
 * TCP/IP Based Communication
-
-  Utilizes standard TCP/IP protocols for communication, ensuring compatibility with a wide range of network infrastructures.
+  </br>Utilizes standard TCP/IP protocols for communication, ensuring compatibility with a wide range of network infrastructures.
 * Multiple Information Types
-
-  Supports transmission of various information types including single point information, double point information, measured values (normalized, scaled, short floating point), integrated totals, and commands (single, double, set point).
+  </br>Supports transmission of various information types including single point information, double point information, measured values (normalized, scaled, short floating point), integrated totals, and commands (single, double, set point).
 * Real-time Data Exchange
-
-  Provides real-time data exchange capabilities, essential for monitoring and controlling industrial processes and electrical systems.
+  </br>Provides real-time data exchange capabilities, essential for monitoring and controlling industrial processes and electrical systems.
 * Time Synchronization
-
-  Supports time synchronization commands to ensure that all connected devices maintain accurate and synchronized time.
+  </br>Supports time synchronization commands to ensure that all connected devices maintain accurate and synchronized time.
 * Event-driven Communication
-
-  Supports event-driven data transmission, allowing for efficient communication by only sending updates when changes occur.
+  </br>Supports event-driven data transmission, allowing for efficient communication by only sending updates when changes occur.
 * Quality and Priority Indicators
-
-  Includes quality and priority indicators for transmitted data, ensuring that the integrity and importance of the data are maintained.
+  </br>Includes quality and priority indicators for transmitted data, ensuring that the integrity and importance of the data are maintained.
 * Automatic Reconnection
-
-  Implements automatic reconnection mechanisms to handle network disruptions, ensuring continuous and reliable communication.
+  </br>Implements automatic reconnection mechanisms to handle network disruptions, ensuring continuous and reliable communication.
 
 ## How to use
 ```shell  
