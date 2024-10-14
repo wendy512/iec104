@@ -33,7 +33,7 @@ IEC 104 是在电力系统和工业自动化领域广泛使用的协议，旨在
 go get -u github.com/wendy512/iec104
 ```
 
-- [客户端读和写入值](tests/client_test.go)
+- [客户端读和写入值](tests/clien_test.go)
 
 ## 开源许可
 iec104 基于 [Apache License 2.0](./LICENSE) 协议。
