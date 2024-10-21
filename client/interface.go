@@ -18,6 +18,6 @@ type ASDUCall interface {
 	OnResetProcess(*asdu.ASDU) error
 	// OnDelayAcquisition 延迟获取回复
 	OnDelayAcquisition(*asdu.ASDU) error
-	// OnASDU 数据正体
+	// OnASDU 数据回复或控制回复
 	OnASDU(*asdu.ASDU) error
 }

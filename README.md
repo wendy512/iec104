@@ -34,7 +34,7 @@ The library support the following IEC 104 protocol features:
 go get -u github.com/wendy512/iec104
 ```
 
-- [Client reads and writes values](tests/clien_test.go)
+- [Server and client test examples](tests/iec104_test.go)
 
 ## License
 iec104 is based on the [Apache License 2.0](./LICENSE) agreement.

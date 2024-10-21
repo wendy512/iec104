@@ -38,7 +38,15 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Install Dependencies
-        run: go mod download
+        run: go mod tidy
 
-      - name: Run Go Vet
-        run: go vet ./...
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Run lint
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
