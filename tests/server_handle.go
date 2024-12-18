@@ -13,7 +13,7 @@ type myServerHandler struct {
 }
 
 func (ms *myServerHandler) OnInterrogation(conn asdu.Connect, pack *asdu.ASDU, quality asdu.QualifierOfInterrogation) error {
-	_ = pack.SendReplyMirror(conn, asdu.ActivationCon)
+	//_ = pack.SendReplyMirror(conn, asdu.ActivationCon)
 	// TODO
 	_ = asdu.Single(conn, false, asdu.CauseOfTransmission{Cause: asdu.InterrogatedByStation}, commonAddr, asdu.SinglePointInfo{
 		Ioa:   100,
@@ -25,7 +25,7 @@ func (ms *myServerHandler) OnInterrogation(conn asdu.Connect, pack *asdu.ASDU, q
 		Value: asdu.DPIDeterminedOn,
 		Qds:   asdu.QDSGood,
 	})
-	_ = pack.SendReplyMirror(conn, asdu.ActivationTerm)
+	//_ = pack.SendReplyMirror(conn, asdu.ActivationTerm)
 	return nil
 }
 
