@@ -1,10 +1,11 @@
 package server
 
 import (
+	"strconv"
+
 	"github.com/wendy512/go-iecp5/asdu"
 	"github.com/wendy512/go-iecp5/clog"
 	"github.com/wendy512/go-iecp5/cs104"
-	"strconv"
 )
 
 // Settings 连接配置
@@ -64,10 +65,10 @@ func (s *Server) Stop() {
 
 // SetOnConnectionHandler set on connect handler
 func (s *Server) SetOnConnectionHandler(f func(asdu.Connect)) {
-	s.SetOnConnectionHandler(f)
+	s.cs104Server.SetOnConnectionHandler(f)
 }
 
 // SetConnectionLostHandler set connect lost handler
 func (s *Server) SetConnectionLostHandler(f func(asdu.Connect)) {
-	s.SetConnectionLostHandler(f)
+	s.cs104Server.SetConnectionLostHandler(f)
 }
