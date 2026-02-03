@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/wendy512/go-iecp5/asdu"
 	"time"
+
+	"github.com/wendy512/go-iecp5/asdu"
 )
 
 type serverHandler struct {
@@ -31,6 +32,10 @@ func (s *serverHandler) ResetProcessHandler(conn asdu.Connect, pack *asdu.ASDU, 
 
 func (s *serverHandler) DelayAcquisitionHandler(conn asdu.Connect, pack *asdu.ASDU, msec uint16) error {
 	return s.h.OnDelayAcquisition(conn, pack, msec)
+}
+
+func (s *serverHandler) TestCommandHandler(conn asdu.Connect, pack *asdu.ASDU) error {
+	return s.h.OnTestCommand(conn, pack)
 }
 
 func (s *serverHandler) ASDUHandler(conn asdu.Connect, pack *asdu.ASDU) error {

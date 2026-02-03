@@ -12,4 +12,5 @@ buildNumber.properties
 logs
 .idea
 rebel.xml
+vendor
 

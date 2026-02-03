@@ -218,7 +218,7 @@ func (c *Client) doSend(cmd *command) error {
 	case asdu.C_RP_NA_1:
 		err = c.client104.ResetProcessCmd(coa, cmd.ca, asdu.QPRGeneralRest)
 	case asdu.C_TS_TA_1:
-		err = c.client104.TestCommand(coa, cmd.ca)
+		err = asdu.TestCommandCP56Time2a(c.client104, coa, cmd.ca, cmd.t)
 	case asdu.C_SC_NA_1, asdu.C_SC_TA_1:
 		var value bool
 		value, err = cast.ToBoolE(cmd.value)

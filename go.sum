@@ -5,5 +5,5 @@ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/rogpeppe/go-internal v1.9.0 h1:73kH8U+JUqXU8lRuOHeVHaa/SZPifC7BkcraZVejAe8=
 github.com/spf13/cast v1.6.0 h1:GEiTHELF+vaR5dhz3VqZfFSzZjYbgeKDpBxQVS4GYJ0=
 github.com/spf13/cast v1.6.0/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
-github.com/wendy512/go-iecp5 v1.2.3 h1:1PCoKzTFmf9Azx2BxoE8k0uH338kUYLnb4PipGHMhXw=
-github.com/wendy512/go-iecp5 v1.2.3/go.mod h1:d5koVsFZF0IV2JYznykSLJy6d29mHvXlNqm6GvvJQ0k=
+github.com/wendy512/go-iecp5 v1.2.4 h1:6BwiRFXej3Yi/v2I+dVMyVZhgji9btZpPJuF8dVcZls=
+github.com/wendy512/go-iecp5 v1.2.4/go.mod h1:d5koVsFZF0IV2JYznykSLJy6d29mHvXlNqm6GvvJQ0k=
