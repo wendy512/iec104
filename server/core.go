@@ -2,6 +2,7 @@ package server
 
 import (
 	"strconv"
+	"sync"
 
 	"github.com/wendy512/go-iecp5/asdu"
 	"github.com/wendy512/go-iecp5/clog"
@@ -23,8 +24,11 @@ type LogCfg struct {
 }
 
 type Server struct {
-	settings    *Settings
-	cs104Server *cs104.Server
+	settings              *Settings
+	cs104Server           *cs104.Server
+	connections           sync.Map // map[string]asdu.Connect
+	connectionHandler     func(asdu.Connect)
+	connectionLostHandler func(asdu.Connect)
 }
 
 func NewSettings() *Settings {
@@ -48,10 +52,13 @@ func New(settings *Settings, handler CommandHandler) *Server {
 		cs104Server.SetLogProvider(logCfg.LogProvider)
 	}
 
-	return &Server{
+	s := &Server{
 		settings:    settings,
 		cs104Server: cs104Server,
 	}
+	cs104Server.SetOnConnectionHandler(s.internalConnectionHandler)
+	cs104Server.SetConnectionLostHandler(s.internalConnectionLostHandler)
+	return s
 }
 
 func (s *Server) Start() {
@@ -65,10 +72,38 @@ func (s *Server) Stop() {
 
 // SetOnConnectionHandler set on connect handler
 func (s *Server) SetOnConnectionHandler(f func(asdu.Connect)) {
-	s.cs104Server.SetOnConnectionHandler(f)
+	s.connectionHandler = f
 }
 
 // SetConnectionLostHandler set connect lost handler
 func (s *Server) SetConnectionLostHandler(f func(asdu.Connect)) {
-	s.cs104Server.SetConnectionLostHandler(f)
+	s.connectionLostHandler = f
+}
+
+// GetConnections get current connections
+func (s *Server) GetConnections() []asdu.Connect {
+	connects := make([]asdu.Connect, 0)
+	s.connections.Range(func(key, value any) bool {
+		connects = append(connects, value.(asdu.Connect))
+		return true
+	})
+	return connects
+}
+
+func (s *Server) internalConnectionHandler(conn asdu.Connect) {
+	addr := conn.UnderlyingConn().RemoteAddr().String()
+	s.connections.Store(addr, conn)
+
+	if s.connectionHandler != nil {
+		s.connectionHandler(conn)
+	}
+}
+
+func (s *Server) internalConnectionLostHandler(conn asdu.Connect) {
+	addr := conn.UnderlyingConn().RemoteAddr().String()
+	s.connections.Delete(addr)
+
+	if s.connectionLostHandler != nil {
+		s.connectionLostHandler(conn)
+	}
 }
