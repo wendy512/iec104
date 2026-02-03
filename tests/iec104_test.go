@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var once sync.Once
+
 func TestClient(t *testing.T) {
 	srv := startServer()
 	settings := client.NewSettings()
@@ -62,7 +64,7 @@ func TestClient(t *testing.T) {
 		}
 
 		// 测试等待回复，不能结束太快
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 15)
 		wg.Done()
 	})
 

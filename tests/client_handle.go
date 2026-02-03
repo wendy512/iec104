@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+
 	"github.com/wendy512/go-iecp5/asdu"
 	"github.com/wendy512/iec104/client"
 )
@@ -19,7 +20,7 @@ func (c *clientCall) OnInterrogation(packet *asdu.ASDU) error {
 // OnCounterInterrogation 总计数器回复
 func (c *clientCall) OnCounterInterrogation(packet *asdu.ASDU) error {
 	addr, value := packet.GetCounterInterrogationCmd()
-	fmt.Printf("counter interrogation reply, addr: %d, request: 0x%02X, rreeze: 0x%02X\n",
+	fmt.Printf("counter interrogation reply, addr: %d, request: 0x%02X, freeze: 0x%02X\n",
 		addr, value.Request, value.Freeze)
 	return nil
 }
@@ -95,28 +96,28 @@ func (c *clientCall) OnASDU(packet *asdu.ASDU) error {
 func (c *clientCall) onSinglePoint(packet *asdu.ASDU) {
 	// [M_SP_NA_1], [M_SP_TA_1] or [M_SP_TB_1] 获取单点信息信息体集合
 	for _, p := range packet.GetSinglePoint() {
-		fmt.Printf("single point, ioa: %d, value: %v\n", p.Ioa, p.Value)
+		fmt.Printf("single point, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onDoublePoint(packet *asdu.ASDU) {
 	// [M_DP_NA_1], [M_DP_TA_1] or [M_DP_TB_1] 获得双点信息体集合
 	for _, p := range packet.GetDoublePoint() {
-		fmt.Printf("double point, ioa: %d, value: %v\n", p.Ioa, p.Value)
+		fmt.Printf("double point, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onMeasuredValueScaled(packet *asdu.ASDU) {
 	// [M_ME_NB_1], [M_ME_TB_1] or [M_ME_TE_1] 获得测量值，标度化值信息体集合
 	for _, p := range packet.GetMeasuredValueScaled() {
-		fmt.Printf("measured value scaled, ioa: %d, value: %v\n", p.Ioa, p.Value)
+		fmt.Printf("measured value scaled, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onMeasuredValueNormal(packet *asdu.ASDU) {
 	// [M_ME_NA_1], [M_ME_TA_1],[ M_ME_TD_1] or [M_ME_ND_1] 获得测量值,规一化值信息体集合
 	for _, p := range packet.GetMeasuredValueNormal() {
-		fmt.Printf("measured value normal, ioa: %d, value: %v\n", p.Ioa, p.Value)
+		fmt.Printf("measured value normal, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
@@ -124,52 +125,52 @@ func (c *clientCall) onStepPosition(packet *asdu.ASDU) {
 	// [M_ST_NA_1], [M_ST_TA_1] or [M_ST_TB_1] 获得步位置信息体集合
 	for _, p := range packet.GetStepPosition() {
 		// state：false: 设备未在瞬变状态 true： 设备处于瞬变状态
-		fmt.Printf("step position, ioa: %d, state: %t, value: %d\n", p.Ioa, p.Value.HasTransient, p.Value.Val)
+		fmt.Printf("step position, ioa: %d, state: %t, value: %d, qds: %d, time: %v\n", p.Ioa, p.Value.HasTransient, p.Value.Val, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onBitString32(packet *asdu.ASDU) {
-	// [M_ME_NC_1], [M_ME_TC_1] or [M_ME_TF_1].获得测量值,短浮点数信息体集合
-	for _, p := range packet.GetMeasuredValueFloat() {
-		fmt.Printf("bigtstring32, ioa: %d, value: %v\n", p.Ioa, p.Value)
+	// [M_BO_NA_1], [M_BO_TA_1] or [M_BO_TB_1].获得比特位串信息体集合
+	for _, p := range packet.GetBitString32() {
+		fmt.Printf("bit string 32, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onMeasuredValueFloat(packet *asdu.ASDU) {
 	// [M_ME_NC_1], [M_ME_TC_1] or [M_ME_TF_1].获得测量值,短浮点数信息体集合
 	for _, p := range packet.GetMeasuredValueFloat() {
-		fmt.Printf("measured value float, ioa: %d, value: %v\n", p.Ioa, p.Value)
+		fmt.Printf("measured value float, ioa: %d, value: %v, qds: %d, time: %v\n", p.Ioa, p.Value, p.Qds, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onIntegratedTotals(packet *asdu.ASDU) {
 	// [M_IT_NA_1], [M_IT_TA_1] or [M_IT_TB_1]. 获得累计量信息体集合
 	for _, p := range packet.GetIntegratedTotals() {
-		fmt.Printf("integrated totals, ioa: %d, count: %d, SQ: 0x%02X, CY: %t, CA: %t, IV: %t\n",
-			p.Ioa, p.Value.CounterReading, p.Value.SeqNumber, p.Value.HasCarry, p.Value.IsAdjusted, p.Value.IsInvalid)
+		fmt.Printf("integrated totals, ioa: %d, count: %d, SQ: 0x%02X, CY: %t, CA: %t, IV: %t, time: %v\n",
+			p.Ioa, p.Value.CounterReading, p.Value.SeqNumber, p.Value.HasCarry, p.Value.IsAdjusted, p.Value.IsInvalid, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onEventOfProtectionEquipment(packet *asdu.ASDU) {
 	// [M_EP_TA_1] [M_EP_TD_1] 获取继电器保护设备事件信息体
 	for _, p := range packet.GetEventOfProtectionEquipment() {
-		fmt.Printf("event of protection equipment, ioa: %d, event: %d, qdp: %d, mesc: %d, time: %d\n",
-			p.Ioa, p.Event, p.Qdp, p.Msec, p.Time.UnixMilli())
+		fmt.Printf("event of protection equipment, ioa: %d, event: %d, qdp: %d, msec: %d, time: %v\n",
+			p.Ioa, p.Event, p.Qdp, p.Msec, p.Time.Format("2006-01-02 15:04:05.000"))
 	}
 }
 
 func (c *clientCall) onPackedStartEventsOfProtectionEquipment(packet *asdu.ASDU) {
 	// [M_EP_TB_1] [M_EP_TE_1] 获取继电器保护设备事件信息体
 	p := packet.GetPackedStartEventsOfProtectionEquipment()
-	fmt.Printf("packed start events of protection equipment, ioa: %d, event: %d, qdp: %d, mesc: %d, time: %d\n",
-		p.Ioa, p.Event, p.Qdp, p.Msec, p.Time.UnixMilli())
+	fmt.Printf("packed start events of protection equipment, ioa: %d, event: %d, qdp: %d, msec: %d, time: %v\n",
+		p.Ioa, p.Event, p.Qdp, p.Msec, p.Time.Format("2006-01-02 15:04:05.000"))
 }
 
 func (c *clientCall) onPackedOutputCircuitInfo(packet *asdu.ASDU) {
 	// [M_EP_TC_1] [M_EP_TF_1] 获取继电器保护设备成组输出电路信息信息体
 	p := packet.GetPackedOutputCircuitInfo()
-	fmt.Printf("packed Output circuit, ioa: %d, qci: %d, qdp: %d, mesc: %d, time: %d\n",
-		p.Ioa, p.Oci, p.Qdp, p.Msec, p.Time.UnixMilli())
+	fmt.Printf("packed output circuit, ioa: %d, qci: %d, qdp: %d, msec: %d, time: %v\n",
+		p.Ioa, p.Oci, p.Qdp, p.Msec, p.Time.Format("2006-01-02 15:04:05.000"))
 }
 
 func (c *clientCall) onPackedSinglePointWithSCD(packet *asdu.ASDU) {
